@@ -1,4 +1,4 @@
-# NEEDS WORK
+# NEEDS WORK NEEDS WORK NEEDS WORK NEEDS WORK
 
 from display import *
 from matrix import *
@@ -13,22 +13,49 @@ def draw_scanline(x0, z0, x1, z1, y, screen, zbuffer, color):
         z0 = z1
         x1 = tx
         z1 = tz
-
     x = x0
     z = z0
     delta_z = (z1 - z0) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0
-
     while x <= x1:
         plot(screen, zbuffer, color, x, y, z)
         x+= 1
         z+= delta_z
 
-
-
-
+def draw_scanlineG(x0, z0, x1, z1, y, screen, zbuffer, c1, c2):
+    if x0 > x1:
+        tx = x0
+        tz = z0
+        x0 = x1
+        z0 = z1
+        x1 = tx
+        z1 = tz
+        temp = c2[:]
+        c2 = c1[:]
+        c1 = temp[:]
+    x = x0
+    z = z0
+    delta_z = 0
+    if (x1 - x0 + 1) != 0:
+        delta_z = (z1 - z0) / (x1 - x0 + 1)
+    delta_r = 0
+    if (x1 - x0 + 1) != 0:
+        delta_r = (c2[0] - c1[0]) / (x1 - x0 + 1)
+    delta_g = 0
+    if (x1 - x0 + 1) != 0:
+        delta_g = (c2[1] - c1[1]) / (x1 - x0 + 1)
+    delta_b = 0
+    if (x1 - x0 + 1) != 0:
+        delta_b = (c2[2] - c1[2]) / (x1 - x0 + 1)
+    while x <= x1:
+        temp = [int(item) for item in c1]
+        plot(screen, zbuffer, temp, int(x), int(y), int(z))
+        x+=1
+        z+=delta_z
+        c1[0] += delta_r
+        c1[1] += delta_g
+        c1[2] += delta_b
         
 def scanline_convert(polygons, i, screen, zbuffer, color):
-    #print("----------------------------------------")
     flip = False
     BOT = 0
     TOP = 2
@@ -37,12 +64,6 @@ def scanline_convert(polygons, i, screen, zbuffer, color):
     points = [ (polygons[i][0], polygons[i][1], polygons[i][2]),
                (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2]),
                (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2]) ]
-
-    # alas random color, we hardly knew ye
-    #color = [0,0,0]
-    #color[RED] = (23*(i/3)) %256
-    #color[GREEN] = (109*(i/3)) %256
-    #color[BLUE] = (227*(i/3)) %256
 
     points.sort(key = lambda x: x[1])
     x0 = points[BOT][0]
@@ -69,7 +90,6 @@ def scanline_convert(polygons, i, screen, zbuffer, color):
             x1 = points[MID][0]
             z1 = points[MID][2]
 
-        #draw_line(int(x0), y, z0, int(x1), y, z1, screen, zbuffer, color)
         draw_scanline(int(x0), z0, int(x1), z1, y, screen, zbuffer, color)
         x0+= dx0
         z0+= dz0
@@ -85,7 +105,6 @@ def helper(fname):
     for line in f.readlines():
         temp = re.sub(' +', ' ', line)
         line = temp.split(" ")
-        #line = re.sub(' +',' ',line).split(" ")
         if line[0] == 'v':
             points.append([float(line[1]), float(line[2]), float(line[3])])
     f.close()
@@ -97,7 +116,6 @@ def generate_mesh(edges, fname):
     for line in f.readlines():
         temp = re.sub(' +', ' ', line)
         line = temp.split(" ")
-        #line = re.sub(' +',' ',line).split(" ")
         if line[0] == 'f':
             obj = line[1:]
             temp = 2
