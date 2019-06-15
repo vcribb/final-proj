@@ -1,9 +1,5 @@
-# Team CaSa
-Calvin and Sajed, Period 5
-
-![Screenshot 1](https://i.imgur.com/oQx2fdV.png)
-![Screenshot 2](https://i.imgur.com/YsAq41T.png)
-![Screenshot 3](https://i.imgur.com/Mhqq4Xb.png)
+# Team Chribbs
+Graphics Final Project by Brandon Chong and Vivian Cribb
 
 **Features:**
 + Mesh: can retrieve information 
