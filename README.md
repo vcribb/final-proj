@@ -2,8 +2,8 @@
 Graphics Final Project by Brandon Chong and Vivian Cribb
 
 **Features:**
-+ Mesh: can retrieve information 
++ Mesh
 ```
 mesh :filename.obj
 ```
-+ Gouraud Shading: shades images gouraud-style
++ Gouraud Shading
