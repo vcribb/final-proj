@@ -5,34 +5,6 @@ from matrix import *
 from gmath import *
 import re
 
-def generate_mesh (edges, filename):
-    points = generate_points(filename)
-    file = open(filename, 'r')
-    for line in file.readlines():
-        line = re.sub(' +',' ',line).split(" ")
-        if line[0] == 'f':
-            vertices = line[1:]
-            counter = 2
-            while counter < len(vertices):
-                p0 = int(vertices[0]) - 1
-                p1 = int(vertices[counter - 1]) - 1
-                p2 = int(vertices[counter]) - 1
-                add_polygon(edges, points[p0][0], points[p0][1], points[p0][2],
-                                   points[p1][0], points[p1][1], points[p1][2],
-                                   points[p2][0], points[p2][1], points[p2][2])
-                counter += 1
-    file.close()
-
-def generate_points(filename):
-    points = []
-    file = open(filename, 'r')
-    for line in file.readlines():
-        line = re.sub(' +',' ',line).split(" ")
-        if line[0] == 'v':
-            points.append([float(line[1]), float(line[2]), float(line[3])])
-    file.close()
-    return points
-
 def draw_scanline(x0, z0, x1, z1, y, screen, zbuffer, color):
     if x0 > x1:
         tx = x0
@@ -51,42 +23,7 @@ def draw_scanline(x0, z0, x1, z1, y, screen, zbuffer, color):
         x+= 1
         z+= delta_z
 
-#draws a line of colors
-def draw_scanlineG(x0, z0, x1, z1, y, screen, zbuffer, xcolor0, xcolor1):
-    #xo corresponds to xcolor0 bc increasing from bot to top
-    if x0 > x1:
-        tx = x0
-        tz = z0
-        x0 = x1
-        z0 = z1
-        x1 = tx
-        z1 = tz
-        temp = xcolor1[:]
-        xcolor1 = xcolor0[:]
-        xcolor0 = temp[:]
-       
 
-    #generally start at 0 -> 1
-    x = x0
-    z = z0
-    #xcolor0 = [int(k) for k in xcolor0]
-    #xcolor1 = [int(i) for i in xcolor1]
-    delta_z = (z1 - z0) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0
-    delta_r = (xcolor1[0] - xcolor0[0]) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0
-    delta_g = (xcolor1[1] - xcolor0[1]) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0
-    delta_b = (xcolor1[2] - xcolor0[2]) / (x1 - x0 + 1) if (x1 - x0 + 1) != 0 else 0
-    
-    
-    
-    while x <= x1:
-        #print(int(x),int(y),int(z),xcolor1,xcolor0)
-        temp = [int(k) for k in xcolor0]
-        plot(screen, zbuffer, temp, int(x), int(y), int(z))
-        x+= 1
-        z+= delta_z
-        xcolor0[0] += delta_r
-        xcolor0[1] += delta_g
-        xcolor0[2] += delta_b
 
 
         
@@ -141,117 +78,40 @@ def scanline_convert(polygons, i, screen, zbuffer, color):
         y+= 1
 
         
-def scanline_convertG(polygons, i, screen, zbuffer, vertexnormals):
-    #print("-----------------gouraud-----------------------")
-    #print( vertex_normal(polygons) )
-    flip = False
-    BOT = 0
-    TOP = 2
-    MID = 1
 
-    points = [ (polygons[i][0], polygons[i][1], polygons[i][2]),
-               (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2]),
-               (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2]) ]
+def helper(fname):
+    points = []
+    f = open(fname, 'r')
+    for line in f.readlines():
+        temp = re.sub(' +', ' ', line)
+        line = temp.split(" ")
+        #line = re.sub(' +',' ',line).split(" ")
+        if line[0] == 'v':
+            points.append([float(line[1]), float(line[2]), float(line[3])])
+    f.close()
+    return points
 
-        #this sorts points in increasing order
-    points.sort(key = lambda x: x[1])
-    x0 = points[BOT][0]
-    z0 = points[BOT][2]
-    x1 = points[BOT][0]
-    z1 = points[BOT][2]
-    y = int(points[BOT][1])
+def generate_mesh(edges, fname):
+    points = helper(fname)
+    f = open(fname, 'r')
+    for line in f.readlines():
+        temp = re.sub(' +', ' ', line)
+        line = temp.split(" ")
+        #line = re.sub(' +',' ',line).split(" ")
+        if line[0] == 'f':
+            obj = line[1:]
+            temp = 2
+            while temp < len(obj):
+                x0 = int(obj[0]) - 1
+                x1 = int(obj[temp - 1]) - 1
+                x2 = int(obj[temp]) - 1
+                add_polygon(edges, points[x0][0], points[x0][1], points[x0][2],
+                                   points[x1][0], points[x1][1], points[x1][2],
+                                   points[x2][0], points[x2][1], points[x2][2])
+                temp+=1
+    f.close()
 
-    distance0 = int(points[TOP][1]) - y * 1.0 + 1
-    distance1 = int(points[MID][1]) - y * 1.0 + 1
-    distance2 = int(points[TOP][1]) - int(points[MID][1]) * 1.0 + 1
-
-    #distance to go up by
-    dx0 = (points[TOP][0] - points[BOT][0]) / distance0 if distance0 != 0 else 0
-    dz0 = (points[TOP][2] - points[BOT][2]) / distance0 if distance0 != 0 else 0
-    dx1 = (points[MID][0] - points[BOT][0]) / distance1 if distance1 != 0 else 0
-    dz1 = (points[MID][2] - points[BOT][2]) / distance1 if distance1 != 0 else 0
-
-    #RGB colors
-    #print(points[BOT],points[MID],points[TOP])
-    if points[BOT] in vertexnormals:
-        color0 = vertexnormals[points[BOT]]
-    else:
-        print("messed up bottom")
-
-    if points[MID] in vertexnormals:
-        color1 = vertexnormals[points[MID]]
-    else:
-        print("messed up middle")
-
-    if points[TOP] in vertexnormals:
-        color2 = vertexnormals[points[TOP]]
-    else:
-        print("messed up top")
-    #print("passed all")
-
-    #My version: 1 goes from bot -> mid -> top, 0 is bot -> top
-    #RGB colors
-    color0R, color0G, color0B = color0[0], color0[1],color0[2]
-    color1R, color1G, color1B = color1[0], color1[1],color1[2]
-    color2R, color2G, color2B = color2[0], color2[1],color2[2]
-
-    #RGB colors to go up by
-    #bottom to top directly
-    dcolor0r = (color2R - color0R) / distance0 if distance0 != 0 else 0
-    dcolor0g = (color2G - color0G) / distance0 if distance0 != 0 else 0
-    dcolor0b = (color2B - color0B) / distance0 if distance0 != 0 else 0
-
-    dcolor1r = (color1R - color0R) / distance1 if distance1 != 0 else 0
-    dcolor1g = (color1G - color0G) / distance1 if distance1 != 0 else 0
-    dcolor1b = (color1B - color0B) / distance1 if distance1 != 0 else 0
-
-    #denotes current starting pos
-    xcolor0R, xcolor0G, xcolor0B = color0[0], color0[1],color0[2]
-    xcolor1R, xcolor1G, xcolor1B = color0[0], color0[1],color0[2]
-    
-    while y <= int(points[TOP][1]):
-        xcolor0 = [xcolor0R % 256, xcolor0G % 256, xcolor0B % 256]
-        xcolor1 = [xcolor1R % 256, xcolor1G % 256, xcolor1B % 256]
-        if ( not flip and y >= int(points[MID][1])):
-            flip = True
-
-            dx1 = (points[TOP][0] - points[MID][0]) / distance2 if distance2 != 0 else 0
-            dz1 = (points[TOP][2] - points[MID][2]) / distance2 if distance2 != 0 else 0
-            x1 = points[MID][0]
-            z1 = points[MID][2]
-
-            #switch colors once we pass to middle
-            xcolor1R, xcolor1G, xcolor1B = color1R, color1G,color1B
-            dcolor1r = (color2R - color1R) / distance2 if distance2 != 0 else 0
-            dcolor1g = (color2G - color1G) / distance2 if distance2 != 0 else 0
-            dcolor1b = (color2B - color1B) / distance2 if distance2 != 0 else 0
-            
-
-        #draw_line(int(x0), y, z0, int(x1), y, z1, screen, zbuffer, color)
-        draw_scanlineG(int(x0), z0, int(x1), z1, y, screen, zbuffer, xcolor0, xcolor1)
-        x0+= dx0
-        z0+= dz0
-        x1+= dx1
-        z1+= dz1
-        y+= 1
-        xcolor0R += dcolor0r
-        xcolor0G += dcolor0g
-        xcolor0B += dcolor0b
-
-        xcolor1R += dcolor1r
-        xcolor1G += dcolor1g
-        xcolor1B += dcolor1b
-
-
-
-
-
-
-
-
-
-
-        
+#--------------------------------------------------------------------------
 
 def add_polygon( polygons, x0, y0, z0, x1, y1, z1, x2, y2, z2 ):
     add_point(polygons, x0, y0, z0)
