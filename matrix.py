@@ -1,12 +1,3 @@
-"""
-A matrix will be an N sized list of 4 element lists.
-Each individual list will represent an [x, y, z, 1] point.
-For multiplication purposes, consider the lists like so:
-x0  x1      xn
-y0  y1      yn
-z0  z1  ... zn
-1  1        1
-"""
 import math
 
 def make_bezier():
@@ -16,7 +7,6 @@ def make_bezier():
         [-3, 3, 0, 0],
         [1, 0, 0, 0]
     ]
-
 
 def make_hermite():
     return [
@@ -35,7 +25,6 @@ def generate_curve_coefs( p0, p1, p2, p3, t ):
 
     matrix_mult(curve, coefs)
     return coefs
-
 
 def make_translate( x, y, z ):
     t = new_matrix()
@@ -80,8 +69,6 @@ def make_rotZ( theta ):
     t[1][1] = math.cos(theta)
     return t
 
-#print the matrix such that it looks like
-#the template in the top comment
 def print_matrix( matrix ):
     s = ''
     for r in range( len( matrix[0] ) ):
@@ -89,9 +76,7 @@ def print_matrix( matrix ):
             s+= str(matrix[c][r]) + ' '
         s+= '\n'
     print s
-    
-#turn the paramter matrix into an identity matrix
-#you may assume matrix is square
+
 def ident( matrix ):
     for r in range( len( matrix[0] ) ):
         for c in range( len(matrix) ):
@@ -100,7 +85,11 @@ def ident( matrix ):
             else:
                 matrix[c][r] = 0
 
-#multiply m1 by m2, modifying m2 to be the product
+def scalar_mult( matrix, s ):
+    for r in range( len( matrix[0] ) ):
+        for c in range( len(matrix) ):
+            matrix[c][r]*= s
+            
 #m1 * m2 -> m2
 def matrix_mult( m1, m2 ):
 
@@ -108,14 +97,13 @@ def matrix_mult( m1, m2 ):
     for row in m2:
         #get a copy of the next point
         tmp = row[:]
-
+        
         for r in range(4):
             m2[point][r] = (m1[0][r] * tmp[0] +
                             m1[1][r] * tmp[1] +
                             m1[2][r] * tmp[2] +
                             m1[3][r] * tmp[3])
         point+= 1
-
 
 def new_matrix(rows = 4, cols = 4):
     m = []

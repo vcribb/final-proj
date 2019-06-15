@@ -1,5 +1,6 @@
 import math
 from display import *
+from collections import defaultdict
 
 
   # IMPORANT NOTE
@@ -116,3 +117,44 @@ def calculate_normal(polygons, i):
     N[2] = A[0] * B[1] - A[1] * B[0]
 
     return N
+
+#calculate vertex normals of all vertices, we can access each index normal with index i
+#L[tuple] -> list of lists, containing all normals that a vertice shares
+#P[tuple] -> list of one averaged node
+def vertex_normal(polygons):
+    L = defaultdict(list)
+    i = 0
+    #each tuple has >= 1 element, which contains a normal
+    while i < len(polygons) - 2:
+        K = calculate_normal(polygons,i)
+        #print("before K", K)
+        normalize(K)
+        #print("normalized K", K)
+        L[tuple(polygons[i][0:3])].append(K)
+        L[tuple(polygons[i+1][0:3])].append(K)
+        L[tuple(polygons[i+2][0:3])].append(K)
+        i += 3
+        
+    P = defaultdict(list)
+    for vertex in L:
+        #vertex is of the form (a,b,c,1.0)
+        #print(vertex)
+        #print(L[k])
+        length = len(L[vertex])
+        totalsum = [0,0,0]
+        for normal in L[vertex]:
+            #print(i)
+            totalsum = [totalsum[0] + normal[0], totalsum[1] + normal[1], totalsum[2] + normal[2] ]
+        P[vertex] = [totalsum[0]/length, totalsum[1]/length, totalsum[2]/length]
+        normalize(P[vertex])
+        #print(P[vertex])
+    return P
+        
+'''pseudocode:
+L = dict
+for T in triangle:
+  for V in triangle vertices:
+    add normal to L
+
+avg each normal for vertices
+'''
