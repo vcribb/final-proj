@@ -1,5 +1,3 @@
-# NEEDS WORK NEEDS WORK NEEDS WORK NEEDS WORK
-
 from display import *
 from matrix import *
 from gmath import *
@@ -97,7 +95,126 @@ def scanline_convert(polygons, i, screen, zbuffer, color):
         z1+= dz1
         y+= 1
 
-        
+def scanline_convertG(polygons, i, screen, zbuffer, vertexnormals):
+    flip = False
+    points = [(polygons[i][0], polygons[i][1], polygons[i][2]),
+              (polygons[i+1][0], polygons[i+1][1], polygons[i+1][2]),
+              (polygons[i+2][0], polygons[i+2][1], polygons[i+2][2])]
+
+    points.sort(key = lambda x: x[1])
+    x0 = points[0][0]
+    x1 = points[0][0]
+    y = int(points[0][1])
+    z0 = points[0][2]
+    z1 = points[0][2]
+
+    d0 = int(points[2][1]) - y * 1.0 + 1
+    d1 = int(points[1][1]) - y * 1.0 + 1
+    d2 = int(points[2][1]) - int(points[1][1]) * 1.0 + 1
+
+    dx0 = 0
+    if d0 != 0:
+        dx0 = (points[2][0] - points[0][0]) / d0
+    dz0 = 0
+    if d0 != 0:
+        dz0 = (points[2][2] - points[0][2]) / d0
+    dx1 = 0
+    if d1 != 0:
+        dx1 = (points[1][0] - points[0][0]) / d1
+    dz1 = 0
+    if d1 != 0:
+        dz1 = (points[1][2] - points[0][2]) / d1
+
+    if points[0] in vertexnormals:
+        c0 = vertexnormals[points[0]]
+    else:
+        print('error')
+    if points[1] in vertexnormals:
+        c1 = vertexnormals[points[1]]
+    else:
+        print('error')
+
+    if points[2] in vertexnormals:
+        c2 = vertexnormals[points[2]]
+    else:
+        print('error')
+
+    c0r = c0[0]
+    c0g = c0[1]
+    c0b = c0[2]
+    c1r = c1[0]
+    c1g = c1[1]
+    c1b = c1[2]
+    c2r = c2[0]
+    c2g = c2[1]
+    c2b = c2[2]
+
+    dc0r = 0
+    if d0 != 0:
+        dc0r = (c2r - c0r) / d0
+    dc0g = 0
+    if d0 != 0:
+        dc0g = (c2g - c0g) / d0
+    dc0b = 0
+    if d0 != 0:
+        dc0b = (c2b - c0b) / d0
+    dc1r = 0
+    if d1 != 0:
+        dc1r = (c1r - c0r) / d1
+    dc1g = 0
+    if d1 != 0:
+        dc1g = (c1g - c0g) / d1
+    dc1b = 0
+    if d1 != 0:
+        dc1b = (c1b - c0b) / d1
+
+    xc0r = c0[0]
+    xc0g = c0[1]
+    xc0b = c0[2]
+    xc1r = c0[0]
+    xc1g = c0[1]
+    xc1b = c0[2]
+    
+    while y <= int(points[2][1]):
+        xc0 = [xc0r % 256, xc0g % 256, xc0b % 256]
+        xc1 = [xc1r % 256, xc1g % 256, xc1b % 256]
+        if (not flip and y >= int(points[1][1])):
+            flip = True
+
+            dx1 = 0
+            if d2 != 0:
+                dx1 = (points[2][0] - points[1][0]) / d2
+            dz1 = 0
+            if d2 != 0:
+                dz1 = (points[2][2] - points[1][2]) / d2
+            x1 = points[1][0]
+            z1 = points[1][2]
+
+            xc1r = c1r
+            xc1g = c1g
+            xc1b = c1b
+            dc1r = 0
+            if d2 != 0:
+                dc1r = (c2r - c1r) / d2
+            dc1g = 0
+            if d2 != 0:
+                dc1g = (c2g - c1g) / d2
+            dc1b = 0
+            if d2 != 0:
+                dc1b = (c2b - c1b) / d2
+            
+        draw_scanlineG(int(x0), z0, int(x1), z1, y, screen, zbuffer, xc0, xc1)
+        x0+=dx0
+        z0+=dz0
+        x1+=dx1
+        z1+=dz1
+        y+=1
+        xc1r += dc1r
+        xc1g += dc1g
+        xc1b += dc1b 
+        xc0r += dc0r
+        xc0g += dc0g
+        xc0b += dc0b       
 
 def helper(fname):
     points = []
